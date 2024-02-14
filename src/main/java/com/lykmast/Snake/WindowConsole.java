@@ -310,10 +310,7 @@ public class WindowConsole {
   }
 
   private void refresh() {
-    invokeAndWait( new Runnable() {
-      @Override public void run() {whiteCanvas();}
-    });
-
+    whiteCanvas();
     initGameState();
     game = new Game(N, M);
   }
