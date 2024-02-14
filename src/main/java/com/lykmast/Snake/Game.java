@@ -35,16 +35,6 @@ class Game {
       theBoard.getRandomPositionExcluding(theSnake.getSquares())
     );
   }
-  private void initSnake() {
-    theSnake = new Snake(theBoard.getCenter(), Direction.EAST);
-  }
-
-
-  public void refreshGame() {
-    score = 0;
-    initSnake();
-    placeFood();
-  }
 
   private void move(){
     theSnake.move();
