@@ -297,7 +297,9 @@ public class WindowConsole {
       @Override
       public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("Exit.")){
+          gameOverDialog.dispose();
           theFrame.dispose();
+          System.exit(0);
         }
       }
       
