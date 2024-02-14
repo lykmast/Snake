@@ -23,20 +23,25 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-public class WindowConsole implements Console, Controls{
+import com.lykmast.Snake.Game.GameState;
+
+public class WindowConsole {
+  private Game game;
   private JLayeredPane layered = new JLayeredPane();
   private JPanel gamePanel;
   private JFrame theFrame;
   private JPanel[][] grid;
   private JLabel scoreLabel;
-  private final int N, M;
+  private final int N , M ;
   private Direction direction;
   private Collection<Position> snakeCache;
   private Position foodCache;
 
   WindowConsole(int N, int M) {
-    this.N = N;
+    this.N = N; 
     this.M = M;
+    
+    game = new Game(N, M);
     
     initGameState();
     
@@ -50,6 +55,26 @@ public class WindowConsole implements Console, Controls{
     theFrame.setVisible(true);
 
   }
+
+  public void play(){
+    while(game.doIteration(direction) == GameState.GameNotOver){
+      drawEveryting();
+      try {
+        Thread.sleep(333);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    gameOver();
+  }
+
+  private void drawEveryting() {
+    drawFood();
+    drawScore();
+    drawSnake();
+  }
+
+ 
 
   private void initGameState() {
     snakeCache = new ArrayList<>();
@@ -181,8 +206,7 @@ public class WindowConsole implements Console, Controls{
   }
 
 
-  @Override
-  public void whiteCanvas() {
+  private void whiteCanvas() {
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < M; j++) {
         drawSquare(i, j, Color.WHITE);
@@ -190,8 +214,8 @@ public class WindowConsole implements Console, Controls{
     }
   }
 
-  @Override
-  public void drawScore(int score) {
+  private void drawScore() {
+    int score = game.getScore();
     scoreLabel.setText("Score: " + score);
   }
 
@@ -199,16 +223,16 @@ public class WindowConsole implements Console, Controls{
     grid[i][j].setBackground(c);
   } 
 
-  @Override
-  public void drawFood(Position foodPosition) {
+  private void drawFood() {
+    Position foodPosition = game.getFoodPosition();
     if (foodPosition != foodCache) {
       drawSquare(foodPosition.x, foodPosition.y, Color.BLACK);
       foodCache = foodPosition;
     }
   }
 
-  @Override
-  public void drawSnake(Collection<Position> newSnake) {
+  private void drawSnake() {
+    Collection<Position> newSnake = game.getSnakeSquares();
     Collection<Position> turnWhite = new ArrayList<Position>(snakeCache);
     Collection<Position> turnBlack = new ArrayList<Position>(newSnake);
     turnBlack.removeAll(snakeCache);
@@ -226,14 +250,13 @@ public class WindowConsole implements Console, Controls{
 
   }
 
-  @Override
-  public void gameOver(Game game) {
+  private void gameOver() {
 
     JDialog gameOverDialog = new JDialog(theFrame);
     JLabel gameOverText = new JLabel("Game is over!");
     gameOverText.setFont(new Font("Century Gothic", Font.BOLD, 15));
 
-    JButton exitButton      = new JButton("Exit.");
+    JButton exitButton = new JButton("Exit.");
     
     // play again button not yet connected.
     JButton playAgainButton = new JButton("Play Again?");
@@ -244,8 +267,7 @@ public class WindowConsole implements Console, Controls{
         if (e.getActionCommand().equals("Play Again?")){
           gameOverDialog.dispose();
           refresh();
-          game.refreshGame();
-          game.play();
+          play();
         }
       }
     });
@@ -275,15 +297,10 @@ public class WindowConsole implements Console, Controls{
     gameOverDialog.setVisible(true);
   }
 
-  @Override
-  public Direction getDirection() {
-    return direction;
-  }
-
-  @Override
-  public void refresh() {
+  private void refresh() {
     whiteCanvas();
     initGameState();
+    game.refreshGame();
   }
 
 }
