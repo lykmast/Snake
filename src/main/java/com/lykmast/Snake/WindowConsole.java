@@ -7,8 +7,6 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -91,33 +89,6 @@ public class WindowConsole {
     theFrame.setLocationRelativeTo(null);
     theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     theFrame.addKeyListener(theKeyListener());
-    theFrame.addComponentListener(theComponentListener());
-  }
-
-  private final ComponentListener theComponentListener() {
-    return new ComponentListener() {
-
-      @Override
-      public void componentHidden(ComponentEvent arg0) {
-        // do nothing.
-      }
-
-      @Override
-      public void componentMoved(ComponentEvent arg0) {
-        // do nothing.
-      }
-
-      @Override
-      public void componentResized(ComponentEvent e) {
-        int width = e.getComponent().getSize().width;
-        e.getComponent().setSize(width, width);
-      }
-
-      @Override
-      public void componentShown(ComponentEvent arg0) {
-        // do nothing. 
-      }
-    };
   }
   private final KeyListener theKeyListener() {
     return new KeyListener() {
