@@ -301,7 +301,6 @@ public class WindowConsole {
    
     JPanel buttonPanel = new JPanel(new GridLayout(1,2,10,10));
     buttonPanel.add(playAgainButton);
-    // JPanel buttonPanel = new JPanel(new BorderLayout(10,10));
     buttonPanel.add(exitButton);
     gameOverDialog.add(buttonPanel, BorderLayout.CENTER);
     gameOverDialog.pack();

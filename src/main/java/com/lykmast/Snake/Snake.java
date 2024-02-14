@@ -3,7 +3,6 @@ package com.lykmast.Snake;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
-// import java.util.Vector;
 
 class Snake {
   private int size = 3;
