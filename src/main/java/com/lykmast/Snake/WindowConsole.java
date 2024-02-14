@@ -9,8 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -20,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import com.lykmast.Snake.Game.GameState;
 
@@ -34,8 +38,10 @@ public class WindowConsole {
   private Direction direction;
   private Collection<Position> snakeCache;
   private Position foodCache;
+  private final ExecutorService gameExecutorService;
 
   WindowConsole(int N, int M) {
+    gameExecutorService = Executors.newSingleThreadExecutor();
     this.N = N; 
     this.M = M;
     
@@ -44,35 +50,72 @@ public class WindowConsole {
     initGameState();
     
     
-    initFrame();
-    
-    createContentPane();
-    createGamePanel();
-    
-    initGrid();
-    theFrame.setVisible(true);
-
-  }
-
-  public void play(){
-    while(game.doIteration(direction) == GameState.GameNotOver){
-      drawEveryting();
-      try {
-        Thread.sleep(333);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+    try {
+      SwingUtilities.invokeAndWait(initializeGuiRunnable);
+    } catch (InvocationTargetException | InterruptedException e) {
+      e.printStackTrace();
     }
-    gameOver();
   }
 
-  private void drawEveryting() {
+  void invokeAndWait(Runnable exec){
+    try {
+      SwingUtilities.invokeAndWait(exec);
+    } catch (InvocationTargetException | InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+
+
+  private final Runnable initializeGuiRunnable = new Runnable() {
+
+    @Override
+    public void run() {
+      initFrame();
+      createContentPane();
+      createGamePanel();
+      initGrid();
+      theFrame.setVisible(true);
+    }
+
+  };
+
+
+
+
+  public void playOnThread(){
+    gameExecutorService.execute(new Runnable() {
+      @Override public void run() { play(); }
+    });
+  }
+
+
+  private void play(){ 
+    while(game.doIteration(direction) == GameState.GameNotOver) {
+      invokeAndWait( new Runnable() {
+        @Override public void run() {drawEverything();}
+      });
+      sleep(333);
+    }
+
+    invokeAndWait(new Runnable() {
+      @Override public void run() {gameOver();}
+    });
+  }
+
+  private void sleep(long ms){
+    try {
+      Thread.sleep(ms);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void drawEverything() {
     drawFood();
     drawScore();
     drawSnake();
   }
-
- 
 
   private void initGameState() {
     snakeCache = new ArrayList<>();
@@ -229,16 +272,15 @@ public class WindowConsole {
 
     JButton exitButton = new JButton("Exit.");
     
-    // play again button not yet connected.
     JButton playAgainButton = new JButton("Play Again?");
-     playAgainButton.addActionListener(new ActionListener() {
+    playAgainButton.addActionListener(new ActionListener() {
 
       @Override
       public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("Play Again?")){
           gameOverDialog.dispose();
           refresh();
-          play();
+          playOnThread();
         }
       }
     });
@@ -257,9 +299,9 @@ public class WindowConsole {
     gameOverDialog.add(gameOverText, BorderLayout.NORTH);
     gameOverText.setHorizontalAlignment(SwingConstants.CENTER);
    
-    // JPanel buttonPanel = new JPanel(new GridLayout(1,2,10,10));
-    // buttonPanel.add(playAgainButton);
-    JPanel buttonPanel = new JPanel(new BorderLayout(10,10));
+    JPanel buttonPanel = new JPanel(new GridLayout(1,2,10,10));
+    buttonPanel.add(playAgainButton);
+    // JPanel buttonPanel = new JPanel(new BorderLayout(10,10));
     buttonPanel.add(exitButton);
     gameOverDialog.add(buttonPanel, BorderLayout.CENTER);
     gameOverDialog.pack();
@@ -269,9 +311,11 @@ public class WindowConsole {
   }
 
   private void refresh() {
-    whiteCanvas();
-    initGameState();
-    game.refreshGame();
-  }
+    invokeAndWait( new Runnable() {
+      @Override public void run() {whiteCanvas();}
+    });
 
+    initGameState();
+    game = new Game(N, M);
+  }
 }
