@@ -36,6 +36,7 @@ public class WindowConsole {
   private JLabel scoreLabel;
   private final int N , M ;
   private Direction direction;
+  private Direction cachedDirection;
   private Collection<Position> snakeCache;
   private Position foodCache;
   private final ExecutorService gameExecutorService;
@@ -89,13 +90,16 @@ public class WindowConsole {
     });
   }
 
-
-  private void play(){ 
+  private void setDirection() {
+    direction = cachedDirection;
+  }
+  private void play(){
     while(game.doIteration(direction) == GameState.GameNotOver) {
       invokeAndWait( new Runnable() {
         @Override public void run() {drawEverything();}
       });
-      sleep(333);
+      sleep(200);
+      setDirection();
     }
 
     invokeAndWait(new Runnable() {
@@ -120,6 +124,7 @@ public class WindowConsole {
   private void initGameState() {
     snakeCache = new ArrayList<>();
     direction = Direction.EAST;
+    cachedDirection = Direction.EAST;
     foodCache = null;
   }
 
@@ -143,23 +148,26 @@ public class WindowConsole {
 
       @Override
       public void keyReleased(KeyEvent e) {
+        Direction newDirection = cachedDirection;
         switch (e.getKeyCode()) {
           case KeyEvent.VK_UP:
-            direction = Direction.NORTH;
+            newDirection = Direction.NORTH;
             break;
           case KeyEvent.VK_DOWN:
-            direction = Direction.SOUTH;
+            newDirection = Direction.SOUTH;
             break;
           case KeyEvent.VK_LEFT:
-            direction = Direction.EAST;
+            newDirection = Direction.EAST;
             break;
           case KeyEvent.VK_RIGHT:
-            direction = Direction.WEST;
+            newDirection = Direction.WEST;
           default:
             // Don't care about other keys.
             break;
         }
-
+        if (newDirection != Direction.reverse(direction)){
+          cachedDirection = newDirection;
+        }
       }
 
       @Override
