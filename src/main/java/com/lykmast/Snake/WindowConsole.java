@@ -1,0 +1,289 @@
+package com.lykmast.Snake;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+public class WindowConsole implements Console, Controls{
+  private JLayeredPane layered = new JLayeredPane();
+  private JPanel gamePanel;
+  private JFrame theFrame;
+  private JPanel[][] grid;
+  private JLabel scoreLabel;
+  private final int N, M;
+  private Direction direction;
+  private Collection<Position> snakeCache;
+  private Position foodCache;
+
+  WindowConsole(int N, int M) {
+    this.N = N;
+    this.M = M;
+    
+    initGameState();
+    
+    
+    initFrame();
+    
+    createContentPane();
+    createGamePanel();
+    
+    initGrid();
+    theFrame.setVisible(true);
+
+  }
+
+  private void initGameState() {
+    snakeCache = new ArrayList<>();
+    direction = Direction.EAST;
+    foodCache = null;
+  }
+
+  private void initFrame(){
+    theFrame = new JFrame();
+    theFrame.setTitle("Snake");
+    theFrame.setResizable(true);
+    theFrame.setSize(N*16,M*16);
+    theFrame.setMinimumSize(new Dimension(N*2,M*2));
+    theFrame.setLocationRelativeTo(null);
+    theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    theFrame.addKeyListener(theKeyListener());
+    theFrame.addComponentListener(theComponentListener());
+  }
+
+  private final ComponentListener theComponentListener() {
+    return new ComponentListener() {
+
+      @Override
+      public void componentHidden(ComponentEvent arg0) {
+        // do nothing.
+      }
+
+      @Override
+      public void componentMoved(ComponentEvent arg0) {
+        // do nothing.
+      }
+
+      @Override
+      public void componentResized(ComponentEvent e) {
+        int width = e.getComponent().getSize().width;
+        e.getComponent().setSize(width, width);
+      }
+
+      @Override
+      public void componentShown(ComponentEvent arg0) {
+        // do nothing. 
+      }
+    };
+  }
+  private final KeyListener theKeyListener() {
+    return new KeyListener() {
+      
+      @Override
+      public void keyPressed(KeyEvent arg0) {
+        keyReleased(arg0);
+      }
+
+      @Override
+      public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
+          case KeyEvent.VK_UP:
+            direction = Direction.NORTH;
+            break;
+          case KeyEvent.VK_DOWN:
+            direction = Direction.SOUTH;
+            break;
+          case KeyEvent.VK_LEFT:
+            direction = Direction.EAST;
+            break;
+          case KeyEvent.VK_RIGHT:
+            direction = Direction.WEST;
+          default:
+            // Don't care about other keys.
+            break;
+        }
+
+      }
+
+      @Override
+      public void keyTyped(KeyEvent arg0) {
+        // do nothing
+      }
+    };
+  }
+
+  private void createContentPane(){
+    JPanel contentPane = new JPanel();
+    contentPane.setBackground(new Color(0, 51, 0));
+    contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    contentPane.setLayout(new BorderLayout());
+
+    JPanel topPanel = new JPanel();
+    topPanel.setOpaque(false);
+    topPanel.setLayout(new GridLayout(1, 3, 10, 10));
+    topPanel.add(new JLabel(""));
+
+    JLabel lblTitle = new JLabel("Snake");
+    lblTitle.setForeground(new Color(153, 204, 0));
+    lblTitle.setFont(new Font("Century Gothic", Font.BOLD, 20));
+    lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+    topPanel.add(lblTitle);
+    
+    scoreLabel = new JLabel("Score: 0");
+    scoreLabel.setForeground(new Color(153, 204, 0));
+    scoreLabel.setFont(new Font("Century Gothic", 0, 20));
+    topPanel.add(scoreLabel);
+    scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+    layered.setOpaque(true);
+    layered.setLayout(new BorderLayout());
+    contentPane.add(layered, BorderLayout.CENTER);
+    contentPane.add(topPanel, BorderLayout.NORTH);
+    theFrame.setContentPane(contentPane);
+  }
+
+
+  private void initGrid() {
+    grid = new JPanel[N][M];
+    for (int i = 0; i < N; i++) {
+      for (int j = 0; j < M; j++) {
+        grid[i][j] = new JPanel();
+        grid[i][j].setBackground(Color.WHITE);
+        grid[i][j].setOpaque(true);
+        gamePanel.add(grid[i][j]);
+      }
+    }
+  } 
+  
+  void createGamePanel() {
+    gamePanel = new JPanel(new GridLayout(N,M));
+    gamePanel.setOpaque(true);
+    layered.add(gamePanel);
+    layered.setLayer(gamePanel, 0);
+  }
+
+
+  @Override
+  public void whiteCanvas() {
+    for (int i = 0; i < N; i++) {
+      for (int j = 0; j < M; j++) {
+        drawSquare(i, j, Color.WHITE);
+      }
+    }
+  }
+
+  @Override
+  public void drawScore(int score) {
+    scoreLabel.setText("Score: " + score);
+  }
+
+  private void drawSquare(int i, int j, Color c) {
+    grid[i][j].setBackground(c);
+  } 
+
+  @Override
+  public void drawFood(Position foodPosition) {
+    if (foodPosition != foodCache) {
+      drawSquare(foodPosition.x, foodPosition.y, Color.BLACK);
+      foodCache = foodPosition;
+    }
+  }
+
+  @Override
+  public void drawSnake(Collection<Position> newSnake) {
+    Collection<Position> turnWhite = new ArrayList<Position>(snakeCache);
+    Collection<Position> turnBlack = new ArrayList<Position>(newSnake);
+    turnBlack.removeAll(snakeCache);
+    turnWhite.removeAll(newSnake);
+    snakeCache = new ArrayList<Position>(newSnake);
+    
+    for (Position position : turnBlack) {
+      drawSquare(position.x, position.y, Color.BLACK);
+    }
+
+    for (Position position: turnWhite) {
+      drawSquare(position.x, position.y, Color.WHITE);
+    }
+
+
+  }
+
+  @Override
+  public void gameOver(Game game) {
+
+    JDialog gameOverDialog = new JDialog(theFrame);
+    JLabel gameOverText = new JLabel("Game is over!");
+    gameOverText.setFont(new Font("Century Gothic", Font.BOLD, 15));
+
+    JButton exitButton      = new JButton("Exit.");
+    
+    // play again button not yet connected.
+    JButton playAgainButton = new JButton("Play Again?");
+     playAgainButton.addActionListener(new ActionListener() {
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Play Again?")){
+          gameOverDialog.dispose();
+          refresh();
+          game.refreshGame();
+          game.play();
+        }
+      }
+    });
+    exitButton.addActionListener(new ActionListener() {
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Exit.")){
+          theFrame.dispose();
+        }
+      }
+      
+    });
+
+    gameOverDialog.setLayout(new BorderLayout(20,20));
+    gameOverDialog.add(gameOverText, BorderLayout.NORTH);
+    gameOverText.setHorizontalAlignment(SwingConstants.CENTER);
+   
+    // JPanel buttonPanel = new JPanel(new GridLayout(1,2,10,10));
+    // buttonPanel.add(playAgainButton);
+    JPanel buttonPanel = new JPanel(new BorderLayout(10,10));
+    buttonPanel.add(exitButton);
+    gameOverDialog.add(buttonPanel, BorderLayout.CENTER);
+    gameOverDialog.pack();
+    gameOverDialog.setResizable(false);
+    gameOverDialog.setLocationRelativeTo(theFrame);
+    gameOverDialog.setVisible(true);
+  }
+
+  @Override
+  public Direction getDirection() {
+    return direction;
+  }
+
+  @Override
+  public void refresh() {
+    whiteCanvas();
+    initGameState();
+  }
+
+}
