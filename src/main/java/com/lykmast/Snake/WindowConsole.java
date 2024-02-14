@@ -131,7 +131,7 @@ public class WindowConsole {
   private void initFrame(){
     theFrame = new JFrame();
     theFrame.setTitle("Snake");
-    theFrame.setResizable(true);
+    theFrame.setResizable(false);
     theFrame.setSize(N*16,M*16);
     theFrame.setMinimumSize(new Dimension(N*2,M*2));
     theFrame.setLocationRelativeTo(null);
