@@ -39,10 +39,15 @@ public class WindowConsole {
   private Direction cachedDirection;
   private Collection<Position> snakeCache;
   private Position foodCache;
-  private final ExecutorService gameExecutorService;
+  private Thread gameThread;
+  
+  private final Color themeColor1 = new Color(0, 51, 0);
+  private final Color themeColor2 = new Color(153, 204, 0);
+  private enum State {Playing, Paused}
+
+  private State state;
 
   WindowConsole(int N, int M) {
-    gameExecutorService = Executors.newSingleThreadExecutor();
     this.N = N; 
     this.M = M;
     
@@ -74,7 +79,8 @@ public class WindowConsole {
 
 
   public void playOnThread(){
-    gameExecutorService.execute(() -> play());
+    gameThread = new Thread(() -> play(), "Game Thread");
+    gameThread.start();
   }
 
   private void setDirection() {
@@ -85,9 +91,25 @@ public class WindowConsole {
       invokeAndWait( () -> drawEverything());
       sleep(200);
       setDirection();
+      check_pause();
     }
 
-    invokeAndWait(() -> gameOver());
+    SwingUtilities.invokeLater(() -> gameOver());
+  }
+
+  private void check_pause(){
+    if (state == State.Paused){
+      // SwingUtilities.invokeLater(() -> pauseUI());
+      synchronized(gameThread){
+        try {
+          gameThread.wait();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } finally {
+          // invokeAndWait(() -> unpauseUI());
+        }
+      }
+    }
   }
 
   private void sleep(long ms){
@@ -109,6 +131,7 @@ public class WindowConsole {
     direction = Direction.EAST;
     cachedDirection = Direction.EAST;
     foodCache = null;
+    state = State.Playing;
   }
 
   private void initFrame(){
@@ -125,12 +148,12 @@ public class WindowConsole {
     return new KeyListener() {
       
       @Override
-      public void keyPressed(KeyEvent arg0) {
-        keyReleased(arg0);
-      }
-
-      @Override
       public void keyReleased(KeyEvent e) {
+        // keyPressed(e);
+      }
+      
+      @Override
+      public void keyPressed(KeyEvent e) {
         Direction newDirection = cachedDirection;
         switch (e.getKeyCode()) {
           case KeyEvent.VK_UP:
@@ -144,6 +167,19 @@ public class WindowConsole {
             break;
           case KeyEvent.VK_RIGHT:
             newDirection = Direction.WEST;
+            break;
+          case KeyEvent.VK_P:
+          if (state == State.Paused){
+            state = State.Playing;
+            unpauseUI();
+            synchronized(gameThread){
+              gameThread.notify();
+            }
+          } else {
+            pauseUI();
+            state = State.Paused;
+          }
+          break;
           default:
             // Don't care about other keys.
             break;
@@ -154,7 +190,7 @@ public class WindowConsole {
       }
 
       @Override
-      public void keyTyped(KeyEvent arg0) {
+      public void keyTyped(KeyEvent e) {
         // do nothing
       }
     };
@@ -162,7 +198,7 @@ public class WindowConsole {
 
   private void createContentPane(){
     JPanel contentPane = new JPanel();
-    contentPane.setBackground(new Color(0, 51, 0));
+    contentPane.setBackground(themeColor1);
     contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     contentPane.setLayout(new BorderLayout());
 
@@ -172,18 +208,18 @@ public class WindowConsole {
     topPanel.add(new JLabel(""));
 
     JLabel lblTitle = new JLabel("Snake");
-    lblTitle.setForeground(new Color(153, 204, 0));
+    lblTitle.setForeground(themeColor2);
     lblTitle.setFont(new Font("Century Gothic", Font.BOLD, 20));
     lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
     topPanel.add(lblTitle);
     
     scoreLabel = new JLabel("Score: 0");
-    scoreLabel.setForeground(new Color(153, 204, 0));
+    scoreLabel.setForeground(themeColor2);
     scoreLabel.setFont(new Font("Century Gothic", 0, 20));
     topPanel.add(scoreLabel);
     scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-    layered.setOpaque(true);
+    layered.setOpaque(false);
     layered.setLayout(new BorderLayout());
     contentPane.add(layered, BorderLayout.CENTER);
     contentPane.add(topPanel, BorderLayout.NORTH);
@@ -205,7 +241,7 @@ public class WindowConsole {
   
   void createGamePanel() {
     gamePanel = new JPanel(new GridLayout(N,M));
-    gamePanel.setOpaque(true);
+    gamePanel.setOpaque(false);
     layered.add(gamePanel);
     layered.setLayer(gamePanel, 0);
   }
@@ -300,6 +336,32 @@ public class WindowConsole {
     gameOverDialog.setResizable(false);
     gameOverDialog.setLocationRelativeTo(theFrame);
     gameOverDialog.setVisible(true);
+  }
+
+
+  private void pauseUI() {
+    JPanel pausePanel = new JPanel(new BorderLayout());
+    pausePanel.setOpaque(false);
+
+    JLabel pauseLabel = new JLabel("Game paused");
+    pauseLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    pauseLabel.setFont(new Font("Century Gothic", Font.BOLD, 30));
+    pauseLabel.setOpaque(false);
+    pauseLabel.setForeground(themeColor2);
+    
+    pausePanel.add(pauseLabel, BorderLayout.CENTER);
+    pausePanel.setSize(layered.getSize());
+    
+    layered.add(pausePanel);
+    layered.setLayer(pausePanel, 1);
+  }
+
+  private void unpauseUI() {
+    layered.removeAll();
+    layered.add(gamePanel);
+    layered.setLayer(gamePanel, 0);
+    layered.revalidate();
+    layered.repaint();
   }
 
   private void refresh() {
