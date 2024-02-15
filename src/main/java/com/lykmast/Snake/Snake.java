@@ -33,12 +33,6 @@ class Snake {
     addEatSquare();
   }
 
-  private void addEatSquare() {
-    // This is a hack to add a square without causing an intersection.
-    // `position` is added once more at the beggining
-    // so that it is removed on next `move()`. 
-    squares.addFirst(position);
-  }
 
   boolean wouldIntersect(){
     // Should be checked before moving.
@@ -55,6 +49,13 @@ class Snake {
 
   Collection<Position> getSquares(){
     return squares;
+  }
+  
+  private void addEatSquare() {
+    // This is a hack to add a square without causing an intersection.
+    // `position` is added once more at the beggining
+    // so that it is removed on next `move()`. 
+    squares.addFirst(position);
   }
 
   private Deque<Position> calculateStartingSquares() {

@@ -29,7 +29,18 @@ class Game {
     return theSnake.getSquares();
   }
 
-  
+  public GameState doIteration(Direction nextDirection) {
+    theSnake.turn(nextDirection);
+    
+    boolean wouldIntersect = theSnake.wouldIntersect();
+    move();
+    
+    if (!theBoard.inBounds(theSnake.getPosition()) || wouldIntersect){
+      return GameState.GameOver;
+    }
+    return GameState.GameNotOver;
+  }
+
   private void placeFood() {
     theFood.changePosition(
       theBoard.getRandomPositionExcluding(theSnake.getSquares())
@@ -44,19 +55,5 @@ class Game {
       ++ score;
     }
   }
-
-
-  public GameState doIteration(Direction nextDirection) {
-    theSnake.turn(nextDirection);
-    
-    boolean wouldIntersect = theSnake.wouldIntersect();
-    move();
-    
-    if (!theBoard.inBounds(theSnake.getPosition()) || wouldIntersect){
-      return GameState.GameOver;
-    }
-    return GameState.GameNotOver;
-  }
-
   
 }

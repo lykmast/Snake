@@ -56,7 +56,12 @@ public class WindowConsole {
     initGameState();
     
     
-    invokeAndWait(initializeGuiRunnable);
+  }
+
+
+  public void playOnThread(){
+    gameThread = new Thread(() -> play(), "Game Thread");
+    gameThread.start();
   }
 
   private void invokeAndWait(Runnable exec){
