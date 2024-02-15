@@ -51,14 +51,10 @@ public class WindowConsole {
     initGameState();
     
     
-    try {
-      SwingUtilities.invokeAndWait(initializeGuiRunnable);
-    } catch (InvocationTargetException | InterruptedException e) {
-      e.printStackTrace();
-    }
+    invokeAndWait(initializeGuiRunnable);
   }
 
-  void invokeAndWait(Runnable exec){
+  private void invokeAndWait(Runnable exec){
     try {
       SwingUtilities.invokeAndWait(exec);
     } catch (InvocationTargetException | InterruptedException e) {
@@ -66,28 +62,19 @@ public class WindowConsole {
     }
   }
 
-
-
-  private final Runnable initializeGuiRunnable = new Runnable() {
-
-    @Override
-    public void run() {
+  private final Runnable initializeGuiRunnable = () -> {
       initFrame();
       createContentPane();
       createGamePanel();
       initGrid();
       theFrame.setVisible(true);
-    }
-
   };
 
 
 
 
   public void playOnThread(){
-    gameExecutorService.execute(new Runnable() {
-      @Override public void run() { play(); }
-    });
+    gameExecutorService.execute(() -> play());
   }
 
   private void setDirection() {
@@ -95,16 +82,12 @@ public class WindowConsole {
   }
   private void play(){
     while(game.doIteration(direction) == GameState.GameNotOver) {
-      invokeAndWait( new Runnable() {
-        @Override public void run() {drawEverything();}
-      });
+      invokeAndWait( () -> drawEverything());
       sleep(200);
       setDirection();
     }
 
-    invokeAndWait(new Runnable() {
-      @Override public void run() {gameOver();}
-    });
+    invokeAndWait(() -> gameOver());
   }
 
   private void sleep(long ms){
