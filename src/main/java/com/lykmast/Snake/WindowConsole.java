@@ -12,9 +12,6 @@ import java.awt.event.KeyListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -56,6 +53,7 @@ public class WindowConsole {
     initGameState();
     
     
+    invokeAndWait(()-> initializeGui());
   }
 
 
@@ -72,25 +70,18 @@ public class WindowConsole {
     }
   }
 
-  private final Runnable initializeGuiRunnable = () -> {
+  private void initializeGui() {
       initFrame();
       createContentPane();
       createGamePanel();
       initGrid();
       theFrame.setVisible(true);
-  };
-
-
-
-
-  public void playOnThread(){
-    gameThread = new Thread(() -> play(), "Game Thread");
-    gameThread.start();
   }
 
   private void setDirection() {
     direction = cachedDirection;
   }
+
   private void play(){
     while(game.doIteration(direction) == GameState.GameNotOver) {
       invokeAndWait( () -> drawEverything());
@@ -104,14 +95,11 @@ public class WindowConsole {
 
   private void check_pause(){
     if (state == State.Paused){
-      // SwingUtilities.invokeLater(() -> pauseUI());
       synchronized(gameThread){
         try {
           gameThread.wait();
         } catch (InterruptedException e) {
           e.printStackTrace();
-        } finally {
-          // invokeAndWait(() -> unpauseUI());
         }
       }
     }
@@ -154,7 +142,7 @@ public class WindowConsole {
       
       @Override
       public void keyReleased(KeyEvent e) {
-        // keyPressed(e);
+        // Do nothing.
       }
       
       @Override
@@ -196,7 +184,7 @@ public class WindowConsole {
 
       @Override
       public void keyTyped(KeyEvent e) {
-        // do nothing
+        // Do nothing.
       }
     };
   }
@@ -244,7 +232,7 @@ public class WindowConsole {
     }
   } 
   
-  void createGamePanel() {
+  private void createGamePanel() {
     gamePanel = new JPanel(new GridLayout(N,M));
     gamePanel.setOpaque(false);
     layered.add(gamePanel);
