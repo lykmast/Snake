@@ -8,12 +8,12 @@ class Game {
   private Food theFood; 
   private int score = 0;
   
-  
+  public final static Direction START_DIRECTION= Direction.WEST;
   public enum GameState {GameOver, GameNotOver};
   
   Game(int N, int M) {
     theBoard = new Board(N, M);
-    theSnake = new Snake(theBoard.getCenter(), Direction.EAST);
+    theSnake = new Snake(theBoard.getCenter(), START_DIRECTION);
     theFood = new Food();
     placeFood();
   }

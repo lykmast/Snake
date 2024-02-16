@@ -122,8 +122,8 @@ public class WindowConsole {
 
   private void initGameState() {
     snakeTailCache = null;
-    direction = Direction.EAST;
-    cachedDirection = Direction.EAST;
+    direction = Game.START_DIRECTION;
+    cachedDirection = Game.START_DIRECTION;
     foodCache = null;
     state = State.Playing;
   }
