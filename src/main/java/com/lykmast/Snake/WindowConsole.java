@@ -63,6 +63,10 @@ public class WindowConsole {
     gameThread.start();
   }
 
+  private void invokeLater(Runnable exec) {
+    SwingUtilities.invokeLater(exec);
+  }
+
   private void invokeAndWait(Runnable exec){
     try {
       SwingUtilities.invokeAndWait(exec);
@@ -85,13 +89,13 @@ public class WindowConsole {
 
   private void play(){
     while(game.doIteration(direction) == GameState.GameNotOver) {
-      invokeAndWait( () -> drawEverything());
+      invokeAndWait(() -> drawEverything());
       sleep(200);
       setDirection();
       check_pause();
     }
 
-    SwingUtilities.invokeLater(() -> gameOver());
+    invokeLater(() -> gameOver());
   }
 
   private void check_pause(){
