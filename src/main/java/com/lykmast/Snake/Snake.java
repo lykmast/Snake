@@ -20,8 +20,8 @@ class Snake {
 
   void move() {
     position = new Position(position.oneOver(direction));
-    squares.add(position);
-    squares.remove();
+    squares.addFirst(position);
+    squares.removeLast();
   }
 
   void turn(Direction newDir) {
@@ -53,9 +53,9 @@ class Snake {
   
   private void addEatSquare() {
     // This is a hack to add a square without causing an intersection.
-    // `position` is added once more at the beggining
+    // the tip of the tail is added once more at the tail
     // so that it is removed on next `move()`. 
-    squares.addFirst(position);
+    squares.addLast(squares.getLast());
   }
 
   private Deque<Position> calculateStartingSquares() {
@@ -64,7 +64,7 @@ class Snake {
     Deque<Position> startingSquares = new ArrayDeque<>();
     
     for (int i = 0; i < size; i++) {
-      startingSquares.addFirst(new Position(pos));
+      startingSquares.addLast(new Position(pos));
       pos.moveOneOver(oppositeDir);
     }
     return startingSquares;
