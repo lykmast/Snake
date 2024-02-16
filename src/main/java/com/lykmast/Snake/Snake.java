@@ -1,8 +1,9 @@
 package com.lykmast.Snake;
 
 import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 class Snake {
   private int size = 3;
@@ -47,8 +48,8 @@ class Snake {
     return wouldIntersect;
   }
 
-  Collection<Position> getSquares(){
-    return squares;
+  List<Position> getSquares(){
+    return new ArrayList<>(squares);
   }
   
   private void addEatSquare() {

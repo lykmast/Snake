@@ -10,8 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -34,12 +33,14 @@ public class WindowConsole {
   private final int N , M ;
   private Direction direction;
   private Direction cachedDirection;
-  private Collection<Position> snakeCache;
+  private Position snakeTailCache;
   private Position foodCache;
   private Thread gameThread;
-  
+ 
   private final Color themeColor1 = new Color(0, 51, 0);
   private final Color themeColor2 = new Color(153, 204, 0);
+  private final Color snakeColor = themeColor1;
+  private final Color foodColor = new Color(128, 43, 0);
   private enum State {Playing, Paused}
 
   private State state;
@@ -120,7 +121,7 @@ public class WindowConsole {
   }
 
   private void initGameState() {
-    snakeCache = new ArrayList<>();
+    snakeTailCache = null;
     direction = Direction.EAST;
     cachedDirection = Direction.EAST;
     foodCache = null;
@@ -260,28 +261,24 @@ public class WindowConsole {
   private void drawFood() {
     Position foodPosition = game.getFoodPosition();
     if (foodPosition != foodCache) {
-      drawSquare(foodPosition.x, foodPosition.y, Color.BLACK);
+      drawSquare(foodPosition.x, foodPosition.y, foodColor);
       foodCache = foodPosition;
     }
   }
 
   private void drawSnake() {
-    Collection<Position> newSnake = game.getSnakeSquares();
-    Collection<Position> turnWhite = new ArrayList<Position>(snakeCache);
-    Collection<Position> turnBlack = new ArrayList<Position>(newSnake);
-    turnBlack.removeAll(snakeCache);
-    turnWhite.removeAll(newSnake);
-    snakeCache = new ArrayList<Position>(newSnake);
-    
-    for (Position position : turnBlack) {
-      drawSquare(position.x, position.y, Color.BLACK);
+    List<Position> newSnake = game.getSnakeSquares();
+    if (snakeTailCache == null) {
+      for (Position position: newSnake){
+        drawSquare(position.x, position.y, snakeColor);
+      }
+    } else { // snake is painted in previous position.
+      Position oldTail = snakeTailCache;
+      Position newHead = game.getSnakeSquares().get(0);
+      drawSquare(oldTail.x, oldTail.y, Color.WHITE);
+      drawSquare(newHead.x, newHead.y, snakeColor);
     }
-
-    for (Position position: turnWhite) {
-      drawSquare(position.x, position.y, Color.WHITE);
-    }
-
-
+    snakeTailCache = newSnake.get(newSnake.size()-1);
   }
 
   private void gameOver() {

@@ -1,6 +1,6 @@
 package com.lykmast.Snake;
 
-import java.util.Collection;
+import java.util.List;
 
 class Game {
   private Snake theSnake;
@@ -25,7 +25,7 @@ class Game {
     return theFood.getPosition();
   }
   
-  public Collection<Position> getSnakeSquares() {
+  public List<Position> getSnakeSquares() {
     return theSnake.getSquares();
   }
 
