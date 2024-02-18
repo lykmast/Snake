@@ -11,3 +11,10 @@ A snake game made in Java/Swing.
 ## Features:
 - Pause the game.
 - Play again dialog on game over.
+
+## Build executable
+- If not already installed, install maven.
+- Run `mvn clean package` in root directory.
+- Find executable in directory `target`.
+
+You can also find the executable in [Releases](releases).
