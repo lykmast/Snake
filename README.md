@@ -17,4 +17,4 @@ A snake game made in Java/Swing.
 - Run `mvn clean package` in root directory.
 - Find executable in directory `target`.
 
-You can also find the executable in [Releases](releases).
+You can also find the executable in [Releases](https://github.com/lykmast/Snake/releases).
