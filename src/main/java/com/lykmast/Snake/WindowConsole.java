@@ -264,7 +264,7 @@ public class WindowConsole {
 
   private void drawFood() {
     Position foodPosition = game.getFoodPosition();
-    if (foodPosition != foodCache) {
+    if (!foodPosition.equals(foodCache)) {
       drawSquare(foodPosition.x, foodPosition.y, foodColor);
       foodCache = foodPosition;
     }
